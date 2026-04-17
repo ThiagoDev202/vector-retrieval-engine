@@ -1,0 +1,47 @@
+# Controle de versão
+.git/
+.gitignore
+.gitattributes
+
+# Caches Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+dist/
+build/
+
+# Virtualenv local (o container monta a sua própria)
+.venv/
+venv/
+
+# Configuração e segredos locais
+.env
+.env.*
+!.env.example
+
+# Índice persistido (vem do volume, não da imagem)
+data/index/
+
+# Arquivos de agente/IDE (nunca vão para a imagem)
+.agents/
+.claude/
+CLAUDE.md
+PRD.md
+.idea/
+.vscode/
+
+# Artefatos de build/CI locais
+docker-compose.yml
+.dockerignore
+.pre-commit-config.yaml
+.github/
+
+# Testes não precisam estar na imagem final
+tests/

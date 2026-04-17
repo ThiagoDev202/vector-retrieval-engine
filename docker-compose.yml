@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vector-retrieval-engine:0.1.0
+    container_name: vector-retrieval-engine
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      INDEX_DIR: /app/data/index
+      CORPUS_DIR: /app/data/raw
+    volumes:
+      - vector-data:/app/data/index
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health').read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  vector-data:
+    name: vector-retrieval-engine_vector-data
