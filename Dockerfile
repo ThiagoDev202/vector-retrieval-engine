@@ -20,9 +20,15 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-# Pré-download do modelo HF para evitar latência no primeiro request.
+# Pré-download opcional do modelo HF. Se o build não tiver acesso a huggingface.co,
+# a imagem ainda fica válida — o modelo é baixado no primeiro startup.
 ARG EMBEDDING_MODEL
-RUN /opt/venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')"
+ARG PREFETCH_MODEL=1
+RUN mkdir -p /opt/hf-cache && \
+    if [ "$PREFETCH_MODEL" = "1" ]; then \
+      /opt/venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')" \
+      || echo "aviso: pré-download do modelo falhou; será baixado no startup"; \
+    fi
 
 # Instala o projeto em si (copia mínima para invalidar cache só quando o código muda).
 COPY app ./app

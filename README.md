@@ -50,6 +50,13 @@ docker compose up --build
 
 No primeiro boot, a imagem é construída (~2 min), o modelo HF é baixado durante o build e o corpus é ingestionado no startup. A API fica disponível em:
 
+> **Ambientes offline / air-gapped:** se o build/container não alcançar `huggingface.co`, use
+> `docker compose build --build-arg PREFETCH_MODEL=0` (a imagem fica válida e tenta baixar no
+> startup). Para uso 100% offline, monte um cache HF pré-populado no host em
+> `~/.cache/huggingface/` como volume adicional para `/opt/hf-cache` no serviço do
+> `docker-compose.yml`, e defina `HF_HUB_OFFLINE=1` no `.env`.
+
+
 - **API:** http://localhost:8000/api/v1
 - **Swagger UI:** http://localhost:8000/docs
 
