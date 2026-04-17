@@ -1,0 +1,56 @@
+# Arquivos e pastas locais do agente/IDE
+.agents/
+.claude/
+
+# Documentação interna (não versionar)
+CLAUDE.md
+PRD.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.installed.cfg
+dist/
+build/
+*.so
+
+# Virtualenvs e ambientes
+.venv/
+venv/
+env/
+
+# Caches de ferramentas
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Configuração local e segredos
+.env
+.env.*
+!.env.example
+
+# Artefatos do índice FAISS (persistidos em volume, não em VCS)
+data/index/*
+!data/index/.gitkeep
+
+# Cache HuggingFace local (pré-download fica no container)
+.cache/
+.huggingface/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# SO
+.DS_Store
+Thumbs.db
