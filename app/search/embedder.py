@@ -11,6 +11,8 @@ from numpy.typing import NDArray
 
 from app.core.exceptions import EmbeddingError
 
+_EMBED_TIMEOUT_SECONDS: float = 30.0
+
 
 @runtime_checkable
 class Embedder(Protocol):
@@ -95,7 +97,10 @@ class SentenceTransformerEmbedder:
             return array
 
         try:
-            return await asyncio.to_thread(_encode)
+            async with asyncio.timeout(_EMBED_TIMEOUT_SECONDS):
+                return await asyncio.to_thread(_encode)
+        except TimeoutError as exc:
+            raise EmbeddingError("timeout ao gerar embedding") from exc
         except Exception as exc:  # noqa: BLE001 - queremos encapsular qualquer erro do backend
             raise EmbeddingError("falha ao gerar embedding") from exc
 

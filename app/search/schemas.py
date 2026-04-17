@@ -2,7 +2,11 @@
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+_ALLOWED_METADATA_VALUE_TYPES = (str, int, float, bool, type(None))
+_MAX_METADATA_KEYS = 20
+_MAX_METADATA_VALUE_LEN = 2_000
 
 
 class DocumentIn(BaseModel):
@@ -11,8 +15,23 @@ class DocumentIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id: str | None = Field(default=None, min_length=1, max_length=128)
-    content: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=1, max_length=50_000)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("metadata")
+    @classmethod
+    def _validate_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
+        """Valida limites e tipos dos valores do metadata."""
+        if len(value) > _MAX_METADATA_KEYS:
+            raise ValueError(f"metadata excede {_MAX_METADATA_KEYS} chaves")
+        for val in value.values():
+            if not isinstance(val, _ALLOWED_METADATA_VALUE_TYPES):
+                raise ValueError(
+                    "metadata aceita apenas valores primitivos (str, int, float, bool, None)"
+                )
+            if isinstance(val, str) and len(val) > _MAX_METADATA_VALUE_LEN:
+                raise ValueError(f"valor de metadata excede {_MAX_METADATA_VALUE_LEN} caracteres")
+        return value
 
 
 class DocumentOut(BaseModel):
@@ -44,7 +63,7 @@ class SearchQuery(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    query: str = Field(..., min_length=1)
+    query: str = Field(..., min_length=1, max_length=2_000)
     top_k: int | None = Field(default=None, gt=0, le=50)
 
 

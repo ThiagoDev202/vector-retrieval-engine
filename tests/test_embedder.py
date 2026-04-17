@@ -148,3 +148,27 @@ async def test_sentence_transformer_embed_propagates_embedding_error() -> None:
 
         with pytest.raises(EmbeddingError):
             await embedder.embed(["a"])
+
+
+async def test_sentence_transformer_embed_raises_on_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Timeout do backend é re-levantado como EmbeddingError com mensagem 'timeout'."""
+    import time
+
+    from app.search import embedder as embedder_module
+
+    fake_model = MagicMock()
+    fake_model.get_sentence_embedding_dimension.return_value = 384
+    # encode dorme mais que o timeout configurado (0.05s)
+    fake_model.encode.side_effect = lambda *a, **kw: (time.sleep(0.5), None)[1]  # type: ignore[misc]
+
+    with patch("sentence_transformers.SentenceTransformer", return_value=fake_model):
+        emb = SentenceTransformerEmbedder("fake-model")
+        emb.load()
+
+    # Timeout muito curto para o teste ser rápido — aplicado após o load()
+    monkeypatch.setattr(embedder_module, "_EMBED_TIMEOUT_SECONDS", 0.05)
+
+    with pytest.raises(EmbeddingError, match="timeout"):
+        await emb.embed(["algum texto"])

@@ -47,12 +47,13 @@ def test_document_not_found_error_has_document_id() -> None:
 
 
 async def test_document_not_found_returns_404(test_client: AsyncClient) -> None:
-    """DocumentNotFoundError deve resultar em HTTP 404 com detail em PT-BR."""
+    """DocumentNotFoundError deve resultar em HTTP 404 com detail fixo em PT-BR."""
     response = await test_client.get("/raise/document-not-found")
     assert response.status_code == 404
     body = response.json()
-    assert "detail" in body
-    assert "abc123" in body["detail"]
+    assert body["detail"] == "documento não encontrado"
+    # em dev, document_id é exposto como campo separado (sem vazar no detail)
+    assert body.get("document_id") == "abc123"
 
 
 async def test_index_unavailable_returns_503(test_client: AsyncClient) -> None:
