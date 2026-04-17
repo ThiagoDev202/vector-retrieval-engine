@@ -11,6 +11,7 @@ from app.core.config import get_settings
 from app.core.exceptions import DocumentNotFoundError, EmbeddingError, IndexUnavailableError
 from app.core.logging import configure_logging
 from app.search.embedder import SentenceTransformerEmbedder
+from app.search.ingestion import load_corpus
 from app.search.router import router
 from app.search.service import SearchService
 from app.search.store import FaissVectorStore
@@ -69,7 +70,10 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         embedding_model_name=settings.embedding_model,
     )
     application.state.search_service = service
-    # TODO(fase 6): bootstrap_corpus se bootstrap_on_startup e índice vazio.
+
+    if settings.bootstrap_on_startup and int(store.stats()["chunk_count"]) == 0:
+        await load_corpus(settings.corpus_dir, service)
+
     yield
 
 
