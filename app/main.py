@@ -1,6 +1,42 @@
 """Ponto de entrada da aplicação FastAPI."""
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request
+from fastapi.responses import JSONResponse
+
+from app.core.exceptions import DocumentNotFoundError, EmbeddingError, IndexUnavailableError
+from app.core.logging import configure_logging
+
+configure_logging()
+
+
+def register_exception_handlers(application: FastAPI) -> None:
+    """Registra handlers centralizados para erros de domínio."""
+
+    @application.exception_handler(DocumentNotFoundError)
+    async def handle_document_not_found(
+        request: Request, exc: DocumentNotFoundError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": str(exc) or "documento não encontrado"},
+        )
+
+    @application.exception_handler(IndexUnavailableError)
+    async def handle_index_unavailable(
+        request: Request, exc: IndexUnavailableError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": str(exc) or "índice indisponível"},
+        )
+
+    @application.exception_handler(EmbeddingError)
+    async def handle_embedding_error(request: Request, exc: EmbeddingError) -> JSONResponse:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(exc) or "falha ao gerar embedding"},
+        )
+
 
 app = FastAPI(
     title="Vector Retrieval Engine",
@@ -9,6 +45,8 @@ app = FastAPI(
     docs_url="/docs",
     openapi_url="/api/v1/openapi.json",
 )
+
+register_exception_handlers(app)
 
 api_router = APIRouter(prefix="/api/v1")
 
