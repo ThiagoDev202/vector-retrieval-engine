@@ -3,8 +3,8 @@
 from httpx import AsyncClient
 
 
-async def test_health_returns_ok(client: AsyncClient) -> None:
-    response = await client.get("/api/v1/health")
+async def test_health_returns_ok(service_client: AsyncClient) -> None:
+    response = await service_client.get("/api/v1/health")
 
     assert response.status_code == 200
     body = response.json()
