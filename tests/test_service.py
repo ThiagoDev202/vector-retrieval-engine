@@ -68,3 +68,11 @@ async def test_search_uses_default_top_k_when_none(service: SearchService) -> No
     query = SearchQuery(query="documento conteúdo", top_k=None)
     result = await service.search(query)
     assert len(result.hits) <= 3
+
+
+async def test_get_document_returns_aggregated_metadata(service: SearchService) -> None:
+    await service.add_document(
+        DocumentIn(id="x", content="texto curto", metadata={"k": "v"}),
+    )
+    result = await service.get_document("x")
+    assert result.metadata == {"k": "v"}

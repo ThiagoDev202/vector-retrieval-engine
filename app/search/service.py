@@ -87,7 +87,8 @@ class SearchService:
             )
             for r in records
         ]
-        return DocumentDetail(document_id=document_id, chunks=chunks)
+        metadata = dict(records[0].metadata) if records else {}
+        return DocumentDetail(document_id=document_id, chunks=chunks, metadata=metadata)
 
     async def delete_document(self, document_id: str) -> None:
         """Remove um documento e todos os seus chunks do índice."""

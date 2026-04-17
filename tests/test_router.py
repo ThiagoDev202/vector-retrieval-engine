@@ -90,7 +90,11 @@ async def test_search_top_k_override(service_client: AsyncClient) -> None:
 async def test_get_document(service_client: AsyncClient) -> None:
     await service_client.post(
         "/api/v1/documents",
-        json={"id": "doc-detail", "content": "Conteúdo para verificação de detalhes do documento"},
+        json={
+            "id": "doc-detail",
+            "content": "Conteúdo para verificação de detalhes do documento",
+            "metadata": {"title": "Detalhe do documento"},
+        },
     )
     response = await service_client.get("/api/v1/documents/doc-detail")
     assert response.status_code == 200
@@ -102,6 +106,8 @@ async def test_get_document(service_client: AsyncClient) -> None:
         assert "chunk_idx" in chunk
         assert "text" in chunk
         assert "metadata" in chunk
+    assert "metadata" in body
+    assert body["metadata"]["title"] == "Detalhe do documento"
 
 
 async def test_get_document_not_found(service_client: AsyncClient) -> None:

@@ -209,6 +209,27 @@ Cobertura mínima: **85%** em `app/search/`. Todos os testes usam `FakeEmbedder`
 
 ---
 
+## Performance
+
+Alvos oficiais (PRD):
+
+- `POST /search` p95 **< 100 ms** (corpus ≤ 1000 chunks, modelo real, CPU x86_64 moderno).
+- Cold-start com índice persistido **< 5 s**; com ingestão do corpus bundled **< 30 s**.
+
+### Benchmark offline
+
+O teste `tests/test_benchmark.py` executa 100 buscas contra um `FakeEmbedder` (vetores determinísticos) com 200 documentos sintéticos indexados, e reporta p50/p95/p99:
+
+```bash
+uv run pytest tests/test_benchmark.py -v -s
+```
+
+Esse benchmark **não** usa o modelo real — mede apenas o overhead da pipeline HTTP + chunking + store + search. Resultado típico em CPU moderna: p95 < 10 ms. O gargalo em produção é o `embedder.encode()` (~60-90 ms por query no modelo `paraphrase-multilingual-MiniLM-L12-v2` em CPU).
+
+Para medir com o modelo real, é preciso rodar em ambiente com acesso a HuggingFace (veja seção "Ambientes offline") e substituir o `FakeEmbedder` no teste por uma instância real. Não entra no CI por custo de download.
+
+---
+
 ## Limitações conhecidas (MVP)
 
 - Índice in-process: escala limitada pela memória do container. Para corpora > 100k chunks considere migrar para `IndexIVFFlat` ou Milvus.

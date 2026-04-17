@@ -36,6 +36,7 @@ class DocumentDetail(BaseModel):
 
     document_id: str
     chunks: list[ChunkOut]
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class SearchQuery(BaseModel):
