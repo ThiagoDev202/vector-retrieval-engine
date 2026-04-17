@@ -241,6 +241,32 @@ Para medir com o modelo real, é preciso rodar em ambiente com acesso a HuggingF
 
 ---
 
+## Auditoria de dependências
+
+A árvore de dependências pode ser auditada contra o banco CVE público (PyPI Advisory DB) via `pip-audit`, incluído como dev-dep:
+
+```bash
+uv run pip-audit --strict
+```
+
+- `--strict` promove warnings a erros — falha a execução quando há CVE.
+
+### CVEs aceitas
+
+| Pacote | Versão | CVE | Motivo |
+|---|---|---|---|
+| `transformers` | 4.57.x | CVE-2026-1839 | Fix disponível apenas em `5.0.0rc3` (release candidate). O caminho vulnerável não é exercitado pelo `SentenceTransformerEmbedder` (usamos apenas `encode` com `normalize_embeddings=True`); nenhum teste dispara. Reavaliar quando `5.0.0` estável for publicado. |
+
+O hook pre-commit `pip-audit` está cadastrado em stage manual (não roda em `git commit`). Execute explicitamente quando quiser:
+
+```bash
+uv run pre-commit run pip-audit --hook-stage manual --all-files
+```
+
+Quando uma CVE crítica ou alta aparecer, a correção padrão é bump de versão em `pyproject.toml` seguido de `uv lock --upgrade-package <nome>`. CVEs classificadas como "low" podem ser documentadas como aceitas se a função vulnerável não for usada no nosso caminho.
+
+---
+
 ## Estrutura do projeto
 
 ```

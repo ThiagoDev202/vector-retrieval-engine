@@ -27,3 +27,10 @@ repos:
         types: [python]
         pass_filenames: false
         stages: [pre-push]
+      - id: pip-audit
+        name: pip-audit
+        entry: uv run pip-audit --strict
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [manual]
